@@ -89,6 +89,14 @@ type PerformanceProfileSpec struct {
 	// kernel arguments that should be applied on top of the node.
 	// +optional
 	WorkloadHints *WorkloadHints `json:"workloadHints,omitempty"`
+	// DisableOvsDynamicPinning toggles whether CPU affinity of Open vSwitch threads is
+	// controlled by OVN-Kubernetes. When the option is set to "true", OVN-Kubernetes will
+	// not change CPU affinity of Open vSwitch threads. Setting the option to "false" will
+	// cause OVN-Kubernetes to restrict CPU affinity of Open vSwitch threads to match CPU
+	// affinity of Burstable QoS pods.
+	// Defaults to "false"
+	// +optional
+	DisableOvsDynamicPinning *bool `json:"disableOvsDynamicPinning,omitempty"`
 }
 
 // CPUSet defines the set of CPUs(0-3,8-11).

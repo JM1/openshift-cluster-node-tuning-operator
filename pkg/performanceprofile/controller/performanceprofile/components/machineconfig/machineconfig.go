@@ -376,12 +376,15 @@ func getIgnitionConfig(profile *performancev2.PerformanceProfile, opts *componen
 		addContent(ignitionConfig, serviceOvsSlice, "/etc/systemd/system/ovs-vswitchd.service.d/"+templateOvsSliceUsageFile, &ovsMode)
 		addContent(ignitionConfig, serviceOvsSlice, "/etc/systemd/system/ovsdb-server.service.d/"+templateOvsSliceUsageFile, &ovsMode)
 
-		// Tell OVN-K to enable dynamic cpu pinning
-		content, err := getTemplatedOvsFile(assets.Configs, filepath.Join("configs", ovsDynamicPinningTriggerFile), ovsSliceName)
-		if err != nil {
-			return nil, err
+		if profile.Spec.DisableOvsDynamicPinning == nil || !*profile.Spec.DisableOvsDynamicPinning {
+			// Tell OVN-K to enable dynamic cpu pinning
+			content, err := getTemplatedOvsFile(assets.Configs, filepath.Join("configs", ovsDynamicPinningTriggerFile), ovsSliceName)
+			if err != nil {
+				return nil, err
+			}
+
+			addContent(ignitionConfig, content, ovsDynamicPinningTriggerHostFile, &ovsMode)
 		}
-		addContent(ignitionConfig, content, ovsDynamicPinningTriggerHostFile, &ovsMode)
 	}
 
 	if opts.MixedCPUsEnabled {
