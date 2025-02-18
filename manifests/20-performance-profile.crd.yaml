@@ -530,6 +530,15 @@ spec:
                         that needs additional cpus which are not exclusive,
                         alongside the isolated, exclusive resources that are being used already by those workloads.
                       type: string
+                disableOvsDynamicPinning:
+                  description: |-
+                    DisableOvsDynamicPinning toggles whether CPU affinity of Open vSwitch threads is
+                    controlled by OVN-Kubernetes. When the option is set to "true", OVN-Kubernetes will
+                    not change CPU affinity of Open vSwitch threads. Setting the option to "false" will
+                    cause OVN-Kubernetes to restrict CPU affinity of Open vSwitch threads to match CPU
+                    affinity of Burstable QoS pods.
+                    Defaults to "false"
+                  type: boolean
                 globallyDisableIrqLoadBalancing:
                   description: |-
                     GloballyDisableIrqLoadBalancing toggles whether IRQ load balancing will be disabled for the Isolated CPU set.
