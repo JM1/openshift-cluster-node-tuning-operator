@@ -356,6 +356,11 @@ func (in *PerformanceProfileSpec) DeepCopyInto(out *PerformanceProfileSpec) {
 		*out = new(WorkloadHints)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DisableOvsDynamicPinning != nil {
+		in, out := &in.DisableOvsDynamicPinning, &out.DisableOvsDynamicPinning
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

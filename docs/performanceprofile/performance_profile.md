@@ -174,6 +174,7 @@ PerformanceProfileSpec defines the desired state of PerformanceProfile.
 | numa | NUMA defines options related to topology aware affinities | *[NUMA](#numa) | false |
 | net | Net defines a set of network related features | *[Net](#net) | false |
 | globallyDisableIrqLoadBalancing | GloballyDisableIrqLoadBalancing toggles whether IRQ load balancing will be disabled for the Isolated CPU set. When the option is set to \"true\" it disables IRQs load balancing for the Isolated CPU set. Setting the option to \"false\" allows the IRQs to be balanced across all CPUs, however the IRQs load balancing can be disabled per pod CPUs when using irq-load-balancing.crio.io/cpu-quota.crio.io annotations. Defaults to \"false\" | *bool | false |
+| disableOvsDynamicPinning | DisableOvsDynamicPinning toggles whether CPU affinity of Open vSwitch threads is controlled by OVN-Kubernetes. When the option is set to \"true\", OVN-Kubernetes will not change CPU affinity of Open vSwitch threads. Setting the option to \"false\" will cause OVN-Kubernetes to restrict CPU affinity of Open vSwitch threads to match CPU affinity of Burstable QoS pods. Defaults to \"false\" | *bool | false |
 | workloadHints | WorkloadHints defines hints for different types of workloads. It will allow defining exact set of tuned and kernel arguments that should be applied on top of the node. | *[WorkloadHints](#workloadhints) | false |
 
 [Back to TOC](#table-of-contents)
