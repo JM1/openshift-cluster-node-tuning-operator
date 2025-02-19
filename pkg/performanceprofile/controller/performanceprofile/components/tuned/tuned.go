@@ -21,7 +21,10 @@ import (
 
 const (
 	cmdlineDelimiter                        = " "
+	templateDedicatedCpus                   = "DedicatedCpus"
 	templateIsolatedCpus                    = "IsolatedCpus"
+	templateReservedCpus                    = "ReservedCpus"
+	templateNonReservedCpus                 = "NonReservedCpus"
 	templateStaticIsolation                 = "StaticIsolation"
 	templateDefaultHugepagesSize            = "DefaultHugepagesSize"
 	templateHugepages                       = "Hugepages"
@@ -35,8 +38,14 @@ const (
 	templateHardwareTuning                  = "HardwareTuning"
 	templateIsolatedCpuMaxFreq              = "IsolatedCpuMaxFreq"
 	templateReservedCpuMaxFreq              = "ReservedCpuMaxFreq"
+	templateDedicatedCpuList                = "DedicatedCpuList"
 	templateIsolatedCpuList                 = "IsolatedCpuList"
 	templateReservedCpuList                 = "ReservedCpuList"
+	templateNonReservedCpuList              = "NonReservedCpuList"
+	templateDedicatedCpusExpanded           = "DedicatedCpusExpanded"
+	templateIsolatedCpusExpanded            = "IsolatedCpusExpanded"
+	templateReservedCpusExpanded            = "ReservedCpusExpanded"
+	templateNonReservedCpusExpanded         = "NonReservedCpusExpanded"
 	templatePerformanceProfileName          = "PerformanceProfileName"
 )
 
@@ -63,13 +72,21 @@ func NewNodePerformance(profile *performancev2.PerformanceProfile) (*tunedv1.Tun
 
 	templateArgs[templatePerformanceProfileName] = profile.Name
 
+	// TuneD profile variables such as isolated_cores must be sorted because TuneD's sanity checks compare lists with
+	// order sensitivity. To address this, a new variable, nonReservedCpuSet, is introduced as the sorted union of
+	// profile.Spec.CPU.Isolated and profile.Spec.CPU.Dedicated.
+	nonReservedCpuSet := cpuset.New()
+
 	if profile.Spec.CPU.Isolated != nil {
 		minifiedCpuSet, err := cpuset.Parse(string(*profile.Spec.CPU.Isolated))
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse isolated cpuset: %v", err)
 		}
 		templateArgs[templateIsolatedCpus] = minifiedCpuSet.String()
+		templateArgs[templateIsolatedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
 		templateArgs[templateIsolatedCpuList] = minifiedCpuSet.List()
+
+		nonReservedCpuSet = nonReservedCpuSet.Union(minifiedCpuSet)
 	}
 
 	if profile.Spec.CPU.Reserved != nil {
@@ -77,7 +94,27 @@ func NewNodePerformance(profile *performancev2.PerformanceProfile) (*tunedv1.Tun
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse reserved cpuset: %v", err)
 		}
+		templateArgs[templateReservedCpus] = minifiedCpuSet.String()
+		templateArgs[templateReservedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
 		templateArgs[templateReservedCpuList] = minifiedCpuSet.List()
+	}
+
+	if profile.Spec.CPU.Dedicated != nil {
+		minifiedCpuSet, err := cpuset.Parse(string(*profile.Spec.CPU.Dedicated))
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse dedicated cpuset: %v", err)
+		}
+		templateArgs[templateDedicatedCpus] = minifiedCpuSet.String()
+		templateArgs[templateDedicatedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
+		templateArgs[templateDedicatedCpuList] = minifiedCpuSet.List()
+
+		nonReservedCpuSet = nonReservedCpuSet.Union(minifiedCpuSet)
+	}
+
+	if !nonReservedCpuSet.IsEmpty() {
+		templateArgs[templateNonReservedCpus] = nonReservedCpuSet.String()
+		templateArgs[templateNonReservedCpusExpanded] = components.ListToString(nonReservedCpuSet.List())
+		templateArgs[templateNonReservedCpuList] = nonReservedCpuSet.List()
 	}
 
 	if profile.Spec.CPU.BalanceIsolated != nil && !*profile.Spec.CPU.BalanceIsolated {
