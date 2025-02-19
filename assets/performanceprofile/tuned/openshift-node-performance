@@ -24,12 +24,50 @@ include=openshift-node,cpu-partitioning${f:regex_search_ternary:${f:exec:uname:-
 # Different values will override the original values in parent profiles.
 
 [variables]
-#> isolated_cores take a list of ranges; e.g. isolated_cores=2,4-7
-{{if .IsolatedCpus}}
-isolated_cores={{.IsolatedCpus}}
+# NOTE: Overridden variables are not handled properly in child profiles
+# Ref.: https://github.com/redhat-performance/tuned/issues/751
+
+{{if .DedicatedCpus}}
+dedicated_cores={{.DedicatedCpus}}
+#dedicated_cores_expanded=${f:cpulist_unpack:${dedicated_cores}}
+dedicated_cores_expanded={{.DedicatedCpusExpanded}}
+#dedicated_cpumask=${f:cpulist2hex:${dedicated_cores_expanded}}
+dedicated_cpumask=${f:cpulist2hex:{{.DedicatedCpusExpanded}}}
 {{end}}
 
-not_isolated_cores_expanded=${f:cpulist_invert:${isolated_cores_expanded}}
+#> isolated_cores take a list of ranges; e.g. isolated_cores=2,4-7
+{{if and .DedicatedCpus .IsolatedCpus }}
+isolated_cores={{.DedicatedCpus}},{{.IsolatedCpus}}
+#isolated_cores_expanded=${dedicated_cores_expanded},${isolated_cores_expanded}
+isolated_cores_expanded={{.DedicatedCpusExpanded}},{{.IsolatedCpusExpanded}}
+{{else if .Dedicated}}
+isolated_cores={{.DedicatedCpus}}
+#isolated_cores_expanded=${f:cpulist_unpack:${dedicated_cores_expanded}}
+isolated_cores_expanded={{.DedicatedCpusExpanded}}
+{{else}}
+isolated_cores={{.IsolatedCpus}}
+#isolated_cores_expanded=${f:cpulist_unpack:${isolated_cores}}
+isolated_cores_expanded={{.IsolatedCpusExpanded}}
+{{end}}
+
+{{if .ReservedCpus }}
+reserved_cores={{.ReservedCpus}}
+#reserved_cores_expanded=${f:cpulist_unpack:${reserved_cores}}
+reserved_cores_expanded={{.ReservedCpusExpanded}}
+#reserved_cpumask=${f:cpulist2hex:${reserved_cores_expanded}}
+reserved_cpumask=${f:cpulist2hex:{{.ReservedCpusExpanded}}}
+{{end}}
+
+{{if and .IsolatedCpus .DedicatedCpus}}
+#not_isolated_cores_expanded=${f:cpulist_invert:${dedicated_cores_expanded},${isolated_cores_expanded}}
+not_isolated_cores_expanded=${f:cpulist_invert:{{.DedicatedCpusExpanded}},{{.IsolatedCpusExpanded}}}
+{{else if .Dedicated}}
+#not_isolated_cores_expanded=${f:cpulist_invert:${dedicated_cores_expanded}}
+not_isolated_cores_expanded=${f:cpulist_invert:{{.DedicatedCpusExpanded}}}
+{{else}}
+#not_isolated_cores_expanded=${f:cpulist_invert:${isolated_cores_expanded}}
+not_isolated_cores_expanded=${f:cpulist_invert:{{.IsolatedCpusExpanded}}}
+{{end}}
 
 {{if .PerPodPowerManagement}}
 [cpu]

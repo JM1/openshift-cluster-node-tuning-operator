@@ -53,6 +53,11 @@ func (in *CPU) DeepCopyInto(out *CPU) {
 		*out = new(CPUSet)
 		**out = **in
 	}
+	if in.Dedicated != nil {
+		in, out := &in.Dedicated, &out.Dedicated
+		*out = new(CPUSet)
+		**out = **in
+	}
 	return
 }
 

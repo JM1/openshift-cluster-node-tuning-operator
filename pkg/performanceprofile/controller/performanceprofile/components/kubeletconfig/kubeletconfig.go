@@ -95,20 +95,34 @@ func New(profile *performancev2.PerformanceProfile, opts *components.KubeletConf
 		kubeletConfig.SystemReserved[string(corev1.ResourceMemory)] = defaultSystemReservedMemory
 	}
 
-	if profile.Spec.CPU != nil && profile.Spec.CPU.Reserved != nil {
-		kubeletConfig.ReservedSystemCPUs = string(*profile.Spec.CPU.Reserved)
-	}
+	if profile.Spec.CPU != nil {
+		reservedSystemCPUs := cpuset.New()
 
-	if opts.MixedCPUsEnabled {
-		sharedCPUs, err := cpuset.Parse(string(*profile.Spec.CPU.Shared))
-		if err != nil {
-			return nil, err
+		if profile.Spec.CPU.Reserved != nil {
+			reservedCPUs, err := cpuset.Parse(string(*profile.Spec.CPU.Reserved))
+			if err != nil {
+				return nil, err
+			}
+			reservedSystemCPUs = reservedSystemCPUs.Union(reservedCPUs)
 		}
-		reservedCPUs, err := cpuset.Parse(string(*profile.Spec.CPU.Reserved))
-		if err != nil {
-			return nil, err
+
+		if profile.Spec.CPU.Dedicated != nil {
+			dedicatedCPUs, err := cpuset.Parse(string(*profile.Spec.CPU.Dedicated))
+			if err != nil {
+				return nil, err
+			}
+			reservedSystemCPUs = reservedSystemCPUs.Union(dedicatedCPUs)
 		}
-		kubeletConfig.ReservedSystemCPUs = reservedCPUs.Union(sharedCPUs).String()
+
+		if opts.MixedCPUsEnabled && profile.Spec.CPU.Shared != nil {
+			sharedCPUs, err := cpuset.Parse(string(*profile.Spec.CPU.Shared))
+			if err != nil {
+				return nil, err
+			}
+			reservedSystemCPUs = reservedSystemCPUs.Union(sharedCPUs)
+		}
+
+		kubeletConfig.ReservedSystemCPUs = reservedSystemCPUs.String()
 	}
 
 	if profile.Spec.NUMA != nil {
