@@ -31,10 +31,11 @@ CPU defines a set of CPU related features.
 
 | Field | Description | Scheme | Required |
 | ----- | ----------- | ------ | -------- |
-| reserved | Reserved defines a set of CPUs that will not be used for any container workloads initiated by kubelet. | *[CPUSet](#cpuset) | true |
+| reserved | Reserved defines a set of CPUs that will not be used for any Guaranteed QoS pods initiated by kubelet. Kubelet can still use this set of CPUs for Burstable or BestEffort QoS pods. | *[CPUSet](#cpuset) | true |
 | isolated | Isolated defines a set of CPUs that will be used to give to application threads the most execution time possible, which means removing as many extraneous tasks off a CPU as possible. It is important to notice the CPU manager can choose any CPU to run the workload except the reserved CPUs. In order to guarantee that your workload will run on the isolated CPU:\n  1. The union of reserved CPUs and isolated CPUs should include all online CPUs\n  2. The isolated CPUs field should be the complementary to reserved CPUs field | *[CPUSet](#cpuset) | true |
 | balanceIsolated | BalanceIsolated toggles whether or not the Isolated CPU set is eligible for load balancing work loads. When this option is set to \"false\", the Isolated CPU set will be static, meaning workloads have to explicitly assign each thread to a specific cpu in order to work across multiple CPUs. Setting this to \"true\" allows workloads to be balanced across CPUs. Setting this to \"false\" offers the most predictable performance for guaranteed workloads, but it offloads the complexity of cpu load balancing to the application. Defaults to \"true\" | *bool | false |
 | offlined | Offline defines a set of CPUs that will be unused and set offline | *[CPUSet](#cpuset) | false |
+| dedicated | Dedicated defines a set of CPUs that will not be used for any OS system daemons. If Kubelet's static policy option "strict-cpu-reservation" is set, this set of CPUs will also not be used for any container workloads initiated by kubelet, neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods. | *[CPUSet](#cpuset) | false |
 
 [Back to TOC](#table-of-contents)
 

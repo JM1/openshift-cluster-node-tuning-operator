@@ -509,6 +509,13 @@ spec:
                         offloads the complexity of cpu load balancing to the application.
                         Defaults to "true"
                       type: boolean
+                    dedicated:
+                      description: |-
+                        Dedicated defines a set of CPUs that will not be used for any OS system daemons.
+                        If Kubelet's static policy option "strict-cpu-reservation" is set, this set of
+                        CPUs will also not be used for any container workloads initiated by kubelet,
+                        neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods.
+                      type: string
                     isolated:
                       description: |-
                         Isolated defines a set of CPUs that will be used to give to application threads the most execution time possible,
@@ -522,7 +529,10 @@ spec:
                       description: Offline defines a set of CPUs that will be unused and set offline
                       type: string
                     reserved:
-                      description: Reserved defines a set of CPUs that will not be used for any container workloads initiated by kubelet.
+                      description: |-
+                        Reserved defines a set of CPUs that will not be used for any Guaranteed QoS pods
+                        initiated by kubelet. Kubelet can still use this set of CPUs for Burstable or
+                        BestEffort QoS pods.
                       type: string
                     shared:
                       description: |-

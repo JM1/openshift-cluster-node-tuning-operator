@@ -104,7 +104,9 @@ type CPUSet string
 
 // CPU defines a set of CPU related features.
 type CPU struct {
-	// Reserved defines a set of CPUs that will not be used for any container workloads initiated by kubelet.
+	// Reserved defines a set of CPUs that will not be used for any Guaranteed QoS pods
+	// initiated by kubelet. Kubelet can still use this set of CPUs for Burstable or
+	// BestEffort QoS pods.
 	Reserved *CPUSet `json:"reserved"`
 	// Isolated defines a set of CPUs that will be used to give to application threads the most execution time possible,
 	// which means removing as many extraneous tasks off a CPU as possible.
@@ -130,6 +132,12 @@ type CPU struct {
 	// alongside the isolated, exclusive resources that are being used already by those workloads.
 	// +optional
 	Shared *CPUSet `json:"shared,omitempty"`
+	// Dedicated defines a set of CPUs that will not be used for any OS system daemons.
+	// If Kubelet's static policy option "strict-cpu-reservation" is set, this set of
+	// CPUs will also not be used for any container workloads initiated by kubelet,
+	// neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods.
+	// +optional
+	Dedicated *CPUSet `json:"dedicated,omitempty"`
 }
 
 // CPUfrequency defines cpu frequencies for isolated and reserved cpus

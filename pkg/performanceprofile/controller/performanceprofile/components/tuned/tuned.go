@@ -21,7 +21,9 @@ import (
 
 const (
 	cmdlineDelimiter                        = " "
+	templateDedicatedCpus                   = "DedicatedCpus"
 	templateIsolatedCpus                    = "IsolatedCpus"
+	templateReservedCpus                    = "ReservedCpus"
 	templateStaticIsolation                 = "StaticIsolation"
 	templateDefaultHugepagesSize            = "DefaultHugepagesSize"
 	templateHugepages                       = "Hugepages"
@@ -35,8 +37,12 @@ const (
 	templateHardwareTuning                  = "HardwareTuning"
 	templateIsolatedCpuMaxFreq              = "IsolatedCpuMaxFreq"
 	templateReservedCpuMaxFreq              = "ReservedCpuMaxFreq"
+	templateDedicatedCpuList                = "DedicatedCpuList"
 	templateIsolatedCpuList                 = "IsolatedCpuList"
 	templateReservedCpuList                 = "ReservedCpuList"
+	templateDedicatedCpusExpanded           = "DedicatedCpusExpanded"
+	templateIsolatedCpusExpanded            = "IsolatedCpusExpanded"
+	templateReservedCpusExpanded            = "ReservedCpusExpanded"
 	templatePerformanceProfileName          = "PerformanceProfileName"
 )
 
@@ -69,6 +75,7 @@ func NewNodePerformance(profile *performancev2.PerformanceProfile) (*tunedv1.Tun
 			return nil, fmt.Errorf("cannot parse isolated cpuset: %v", err)
 		}
 		templateArgs[templateIsolatedCpus] = minifiedCpuSet.String()
+		templateArgs[templateIsolatedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
 		templateArgs[templateIsolatedCpuList] = minifiedCpuSet.List()
 	}
 
@@ -77,7 +84,19 @@ func NewNodePerformance(profile *performancev2.PerformanceProfile) (*tunedv1.Tun
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse reserved cpuset: %v", err)
 		}
+		templateArgs[templateReservedCpus] = minifiedCpuSet.String()
+		templateArgs[templateReservedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
 		templateArgs[templateReservedCpuList] = minifiedCpuSet.List()
+	}
+
+	if profile.Spec.CPU.Dedicated != nil {
+		minifiedCpuSet, err := cpuset.Parse(string(*profile.Spec.CPU.Dedicated))
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse dedicated cpuset: %v", err)
+		}
+		templateArgs[templateDedicatedCpus] = minifiedCpuSet.String()
+		templateArgs[templateDedicatedCpusExpanded] = components.ListToString(minifiedCpuSet.List())
+		templateArgs[templateDedicatedCpuList] = minifiedCpuSet.List()
 	}
 
 	if profile.Spec.CPU.BalanceIsolated != nil && !*profile.Spec.CPU.BalanceIsolated {
