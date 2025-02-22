@@ -138,6 +138,13 @@ type CPU struct {
 	// neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods.
 	// +optional
 	Dedicated *CPUSet `json:"dedicated,omitempty"`
+	// IrqbalanceBanned defines a set of CPUs that will not be used by irqbalance when
+	// balancing interrupts across CPUs. By default, irqbalance will consider all CPUs
+	// for load balancing except for CPUs which are assigned to pods with annotation
+	// "irq-load-balancing.crio.io: true". This option allows to expand this list of
+	// dynamically banned CPUs with a statically defined set of CPUs.
+	// +optional
+	IrqbalanceBanned *CPUSet `json:"irqbalanceBanned,omitempty"`
 }
 
 // CPUfrequency defines cpu frequencies for isolated and reserved cpus

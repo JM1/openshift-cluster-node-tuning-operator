@@ -516,6 +516,14 @@ spec:
                         CPUs will also not be used for any container workloads initiated by kubelet,
                         neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods.
                       type: string
+                    irqbalanceBanned:
+                      description: |-
+                        IrqbalanceBanned defines a set of CPUs that will not be used by irqbalance when
+                        balancing interrupts across CPUs. By default, irqbalance will consider all CPUs
+                        for load balancing except for CPUs which are assigned to pods with annotation
+                        "irq-load-balancing.crio.io: true". This option allows to expand this list of
+                        dynamically banned CPUs with a statically defined set of CPUs.
+                      type: string
                     isolated:
                       description: |-
                         Isolated defines a set of CPUs that will be used to give to application threads the most execution time possible,
