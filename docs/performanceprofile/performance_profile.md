@@ -36,6 +36,7 @@ CPU defines a set of CPU related features.
 | balanceIsolated | BalanceIsolated toggles whether or not the Isolated CPU set is eligible for load balancing work loads. When this option is set to \"false\", the Isolated CPU set will be static, meaning workloads have to explicitly assign each thread to a specific cpu in order to work across multiple CPUs. Setting this to \"true\" allows workloads to be balanced across CPUs. Setting this to \"false\" offers the most predictable performance for guaranteed workloads, but it offloads the complexity of cpu load balancing to the application. Defaults to \"true\" | *bool | false |
 | offlined | Offline defines a set of CPUs that will be unused and set offline | *[CPUSet](#cpuset) | false |
 | dedicated | Dedicated defines a set of CPUs that will not be used for any OS system daemons. If Kubelet's static policy option "strict-cpu-reservation" is set, this set of CPUs will also not be used for any container workloads initiated by kubelet, neither Guaranteed QoS pods nor Burstable or BestEffort QoS pods. | *[CPUSet](#cpuset) | false |
+| irqbalanceBanned | IrqbalanceBanned defines a set of CPUs that will not be used by irqbalance when balancing interrupts across CPUs. By default, irqbalance will consider all CPUs for load balancing except for CPUs which are assigned to pods with annotation "irq-load-balancing.crio.io: true". This option allows to expand this list of dynamically banned CPUs with a statically defined set of CPUs. | *[CPUSet](#cpuset) | false |
 
 [Back to TOC](#table-of-contents)
 

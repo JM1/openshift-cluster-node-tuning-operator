@@ -103,10 +103,11 @@ const (
 )
 
 const (
-	environmentHugepagesSize  = "HUGEPAGES_SIZE"
-	environmentHugepagesCount = "HUGEPAGES_COUNT"
-	environmentNUMANode       = "NUMA_NODE"
-	environmentOfflineCpus    = "OFFLINE_CPUS"
+	environmentHugepagesSize        = "HUGEPAGES_SIZE"
+	environmentHugepagesCount       = "HUGEPAGES_COUNT"
+	environmentIrqbalanceBannedCpus = "IRQBALANCE_BANNED_CPUS"
+	environmentNUMANode             = "NUMA_NODE"
+	environmentOfflineCpus          = "OFFLINE_CPUS"
 )
 
 const (
@@ -329,7 +330,17 @@ func getIgnitionConfig(profile *performancev2.PerformanceProfile, opts *componen
 		})
 	}
 
-	clearIRQBalanceBannedCPUsService, err := getSystemdContent(getIRQBalanceBannedCPUsOptions())
+	// No banned CPUs by default
+	irqbalanceBannedCpus := "0"
+
+	if profile.Spec.CPU != nil && profile.Spec.CPU.IrqbalanceBanned != nil {
+		irqbalanceBannedCpus, err = components.CPUListToMaskList(string(*profile.Spec.CPU.IrqbalanceBanned))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	clearIRQBalanceBannedCPUsService, err := getSystemdContent(getIRQBalanceBannedCPUsOptions(irqbalanceBannedCpus))
 	if err != nil {
 		return nil, err
 	}
@@ -485,7 +496,8 @@ func getCpusetConfigureServiceOptions() []*unit.UnitOption {
 	}
 }
 
-func getIRQBalanceBannedCPUsOptions() []*unit.UnitOption {
+func getIRQBalanceBannedCPUsOptions(irqbalanceBannedCpus string) []*unit.UnitOption {
+
 	return []*unit.UnitOption{
 		// [Unit]
 		// Description
@@ -494,6 +506,8 @@ func getIRQBalanceBannedCPUsOptions() []*unit.UnitOption {
 		unit.NewUnitOption(systemdSectionUnit, systemdBefore, systemdServiceKubelet),
 		unit.NewUnitOption(systemdSectionUnit, systemdBefore, systemdServiceIRQBalance),
 		// [Service]
+		// Environment
+		unit.NewUnitOption(systemdSectionService, systemdEnvironment, getSystemdEnvironment(environmentIrqbalanceBannedCpus, irqbalanceBannedCpus)),
 		// Type
 		unit.NewUnitOption(systemdSectionService, systemdType, systemdServiceTypeOneshot),
 		// RemainAfterExit
