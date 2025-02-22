@@ -58,6 +58,11 @@ func (in *CPU) DeepCopyInto(out *CPU) {
 		*out = new(CPUSet)
 		**out = **in
 	}
+	if in.IrqbalanceBanned != nil {
+		in, out := &in.IrqbalanceBanned, &out.IrqbalanceBanned
+		*out = new(CPUSet)
+		**out = **in
+	}
 	return
 }
 
